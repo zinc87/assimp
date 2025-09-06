@@ -20,7 +20,7 @@ int main() {
     Model model;
 
     try {
-        model = Model::load("assets/bear.fbx");
+        model = Model::load("assets/Dragon 2.5_fbx.fbx");
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
