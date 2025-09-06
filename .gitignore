@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.cache
+*.log
+
+# Build output
+x64/
+Debug/
+Release/
+*.obj
+*.pdb
+*.exe
+*.dll
+*.lib
+
+# OS
+Thumbs.db
+*.DS_Store
