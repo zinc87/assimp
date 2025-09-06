@@ -190,6 +190,11 @@ void GLSetup::init() {
     glfwSetFramebufferSizeCallback(window, GLSetup::framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST);
+
+
+    //cmd comments
+    std::cout << "WASD to move camera around\nSPACE to fly up\nCRTL to fly down\nENTER to toggle material\n";
+    std::cout << "Hold Right Mouse Button to look around\n";
 }
 
 
