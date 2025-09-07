@@ -32,13 +32,16 @@ struct GLSetup {
 	inline static int width = 800;
 	inline static int height = 600;
 	inline static float lastTime;
+	inline static float lastTime2;
 	inline static bool matToggle = false;
 
 	static void init();
 	static void setupShader();
 
 	static void setMat4(GLuint prog, const char* name, const glm::mat4& M);
+	static void setMat3(GLuint prog, const char* name, const glm::mat3& M);
 	static void setVec3(GLuint prog, const char* name, const glm::vec3& v);
+
 	static GLFWwindow* window;
 	static unsigned int shaderProgram;
 
@@ -74,8 +77,13 @@ private:
 
 class Model {
 public:
+	glm::vec3 position;
+	float rotation;
+	glm::vec3 scale;
+
 	std::vector<Mesh> meshes;
 	static Model load(const char* path);
+	void update();
 	void draw() const;
 };
 

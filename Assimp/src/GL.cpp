@@ -50,6 +50,7 @@ void Mesh::draw() const {
     if (mat.twoSided) glDisable(GL_CULL_FACE);
     glUseProgram(GLSetup::shaderProgram);
     glBindVertexArray(VAO);
+
     glUniform3fv(glGetUniformLocation(GLSetup::shaderProgram, "uKa"), 1, &mat.Ka.x);
     glUniform3fv(glGetUniformLocation(GLSetup::shaderProgram, "uKd"), 1, &mat.Kd.x);
     glUniform3fv(glGetUniformLocation(GLSetup::shaderProgram, "uKs"), 1, &mat.Ks.x);
@@ -142,10 +143,38 @@ Model Model::load(const char* path) {
 
     }
 
+    model.position = glm::vec3(0.f);
+    model.rotation = 0.f;
+    model.scale = glm::vec3(1.f);
+
     return model;
 }
 
+void Model::update(){
+    float now = static_cast<float>(glfwGetTime());
+    float dt = now - GLSetup::lastTime2;
+    GLSetup::lastTime2 = now;
+    
+    float moveSpeed = 10.f;
+    float v = moveSpeed * dt;
+
+    if (glfwGetKey(GLSetup::window, GLFW_KEY_RIGHT) == GLFW_PRESS) position.z += 1.f * v;
+    if (glfwGetKey(GLSetup::window, GLFW_KEY_LEFT) == GLFW_PRESS) position.z -= 1.f * v;
+    if (glfwGetKey(GLSetup::window, GLFW_KEY_UP) == GLFW_PRESS) position.y += 1.f * v;
+    if (glfwGetKey(GLSetup::window, GLFW_KEY_DOWN) == GLFW_PRESS) position.y -= 1.f * v;
+
+
+}
+
 void Model::draw() const {
+
+    glm::mat4 M = glm::translate(glm::mat4(1.f), position)
+        * glm::rotate(glm::mat4(1.f), rotation, glm::vec3(0, 1, 0))
+        * glm::scale(glm::mat4(1.f), scale);
+    glm::mat3 normalMat = glm::transpose(glm::inverse(M));
+    GLSetup::setMat4(GLSetup::shaderProgram, "uModel", M);
+    GLSetup::setMat3(GLSetup::shaderProgram, "uNormalMat", normalMat);
+
     for (auto& mesh : meshes) {
         mesh.draw();
     }
@@ -251,6 +280,9 @@ void GLSetup::setupShader() {
 
 void GLSetup::setMat4(GLuint prog, const char* name, const glm::mat4& M) {
     glUniformMatrix4fv(glGetUniformLocation(prog, name), 1, GL_FALSE, glm::value_ptr(M));
+}
+void GLSetup::setMat3(GLuint prog, const char* name, const glm::mat3& M) {
+    glUniformMatrix3fv(glGetUniformLocation(prog, name), 1, GL_FALSE, glm::value_ptr(M));
 }
 void GLSetup::setVec3(GLuint prog, const char* name, const glm::vec3& v) {
     glUniform3fv(glGetUniformLocation(prog, name), 1, glm::value_ptr(v));

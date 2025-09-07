@@ -17,10 +17,12 @@ int main() {
 
     GLSetup::setupShader();
 
-    Model model;
+    Model ak47;
+    Model Nineteen11;
 
     try {
-        model = Model::load("assets/Dragon 2.5_fbx.fbx");
+        ak47 = Model::load("assets/AK47.fbx");
+        Nineteen11 = Model::load("assets/1911.fbx");
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
@@ -28,6 +30,7 @@ int main() {
     }
 
     GLSetup::lastTime = static_cast<float>(glfwGetTime());
+    GLSetup::lastTime2 = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(GLSetup::window)) {
 
@@ -37,7 +40,9 @@ int main() {
 
         Camera::CameraUpdate();
 
-        model.draw();
+        ak47.update();
+        ak47.draw();
+        //Nineteen11.draw();
 
         glfwSwapBuffers(GLSetup::window);
     }

@@ -31,8 +31,6 @@ void Camera::CameraUpdate() {
     glm::mat4 V = glm::lookAt(cam1.camPos, cam1.camPos + cam1.camFront, cam1.camUp);
     glm::mat4 P = glm::perspective(glm::radians(60.0f), 800.f / 600.f, 0.1f, 100.f);
 
-    glm::mat4 M(1.0f);
-    GLSetup::setMat4(GLSetup::shaderProgram, "uModel", M);
     GLSetup::setMat4(GLSetup::shaderProgram, "uView", V);
     GLSetup::setMat4(GLSetup::shaderProgram, "uProj", P);
     GLSetup::setVec3(GLSetup::shaderProgram, "uCamPos", cam1.camPos);
