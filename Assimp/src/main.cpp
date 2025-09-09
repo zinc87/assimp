@@ -22,11 +22,11 @@ int main() {
     GLSetup::setupShader();
 
     Model ak47;
-    Model Nineteen11;
+    Model dragon;
 
     try {
         ak47 = Model::load("assets/AK47.fbx");
-        Nineteen11 = Model::load("assets/1911.fbx");
+        dragon = Model::load("assets/Dragon 2.5_fbx.fbx");
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
@@ -46,8 +46,8 @@ int main() {
 
         //ak47.update();
         //ak47.draw();
-        Nineteen11.update();
-        Nineteen11.draw();
+        dragon.update();
+        dragon.draw();
 
         glfwSwapBuffers(GLSetup::window);
     }

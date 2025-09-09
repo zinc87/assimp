@@ -88,7 +88,7 @@ public:
 	glm::vec3 scale;
 
 	std::vector<Mesh> meshes;
-	static Model load(const char* path);
+	static Model load(const char* modelPath);
 	void update();
 	void draw() const;
 };

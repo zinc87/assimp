@@ -13,7 +13,10 @@
 #include <filesystem>
 #include <vector>
 #include <cmath>
+#include <filesystem>
+#include <string.h>
 
+using std::filesystem::path;
 
 GLFWwindow* GLSetup::window;
 unsigned int GLSetup::shaderProgram;
@@ -31,15 +34,30 @@ void Mesh::setupMesh() {
 
     glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(Vertex));
 
-    //position attribute
+    //position attribute (location=0)
     glEnableVertexArrayAttrib(VAO, 0);
     glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, (GLuint)offsetof(Vertex, pos));
     glVertexArrayAttribBinding(VAO, 0, 0);
 
-    //normal attribute
+    //normal attribute (location=1)
     glEnableVertexArrayAttrib(VAO, 1);
     glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, (GLuint)offsetof(Vertex, normal));
     glVertexArrayAttribBinding(VAO, 1, 0);
+
+    //uv attribute (location=2)
+    glEnableVertexArrayAttrib(VAO, 2);
+    glVertexArrayAttribFormat(VAO, 2, 2, GL_FLOAT, GL_FALSE, (GLuint)offsetof(Vertex, uv));
+    glVertexArrayAttribBinding(VAO, 2, 0);
+
+    // tangent attribute (location=3)
+    glEnableVertexArrayAttrib(VAO, 3);
+    glVertexArrayAttribFormat(VAO, 3, 3, GL_FLOAT, GL_FALSE, (GLuint)offsetof(Vertex, tangent));
+    glVertexArrayAttribBinding(VAO, 3, 0);
+
+    // bitangent attribute (location=4)
+    glEnableVertexArrayAttrib(VAO, 4);
+    glVertexArrayAttribFormat(VAO, 4, 3, GL_FLOAT, GL_FALSE, (GLuint)offsetof(Vertex, bitangent));
+    glVertexArrayAttribBinding(VAO, 4, 0);
 
     if (!indices.empty()) {
         glCreateBuffers(1, &EBO);
@@ -60,6 +78,18 @@ void Mesh::draw() const {
     glUniform1f(glGetUniformLocation(GLSetup::shaderProgram, "uOpacity"), mat.opacity);
     glUniform1i(glGetUniformLocation(GLSetup::shaderProgram, "matToggle"), GLSetup::matToggle);
 
+    //bind normal map on texture unit 0
+    GLint locHasNM = glGetUniformLocation(GLSetup::shaderProgram, "uHasNormalMap");
+    GLint locNm = glGetUniformLocation(GLSetup::shaderProgram, "uNormalMap");
+    if (hasNormalMap && normalTex) {
+        glBindTextureUnit(0, normalTex);
+        glUniform1i(locNm, 0);
+        glUniform1i(locHasNM, 1);
+    }
+    else {
+        glUniform1i(locHasNM, 0);
+    }
+
     if (!indices.empty()) {
         glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, nullptr);
     }
@@ -70,11 +100,13 @@ void Mesh::draw() const {
     if (mat.twoSided) glEnable(GL_CULL_FACE);
 }
 
-Model Model::load(const char* path) {
+Model Model::load(const char* modelPath) {
 
-    if (!std::filesystem::exists(path)) {
+    if (!std::filesystem::exists(modelPath)) {
         throw std::runtime_error("Invalid file path");
     }
+
+    path modelDir = path(modelPath).parent_path();
 
     unsigned flags =
         aiProcess_Triangulate | aiProcess_GenNormals |
@@ -83,7 +115,7 @@ Model Model::load(const char* path) {
         aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace;
 
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, flags);
+    const aiScene* scene = importer.ReadFile(modelPath, flags);
 
     if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode || scene->mNumMeshes == 0) {
         std::cerr << "ASSIMP error: " << importer.GetErrorString() << "\n";
@@ -167,14 +199,15 @@ Model Model::load(const char* path) {
             if (AI_SUCCESS == aiGetMaterialFloat(A, AI_MATKEY_OPACITY, &f))   mat.opacity = glm::clamp(f, 0.f, 1.f);
             if (AI_SUCCESS == aiGetMaterialInteger(A, AI_MATKEY_TWOSIDED, &iVal)) mat.twoSided = (iVal != 0);
 
-            auto loadTexture = [](const std::string& filepath, bool genMip = true) -> GLuint {
+            auto loadTexture = [](const char* fullpath, bool genMip = true) -> GLuint {
 
                 int w, h, n;
                 stbi_set_flip_vertically_on_load(true);
-                unsigned char* textureData = stbi_load(filepath.c_str(), &w, &h, &n, 4);
+                unsigned char* textureData = stbi_load(fullpath, &w, &h, &n, 4);
                 if (!textureData) {
-                    std::cout << "stb_image error\n";
-                    return -1;
+                    std::cerr << "stb_image error: " << stbi_failure_reason()
+                        << "\nTried: " << fullpath << "\n";
+                    return 0;
                 }
 
                 GLuint tex;
@@ -189,18 +222,27 @@ Model Model::load(const char* path) {
                 stbi_image_free(textureData);
                 return tex;
 
-                };
+            };
+
 
             aiString texPath;
+            std::string filePath = "assets\\";
+            char fullPath[100];
             if (A->GetTextureCount(aiTextureType_NORMALS) > 0 &&
                 A->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
-                normalTexID = loadTexture(texPath.C_Str());
+                std::filesystem::path rel(texPath.C_Str());
+                std::filesystem::path full = modelDir / rel;
+                
+                normalTexID = loadTexture(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }
             else if (A->GetTextureCount(aiTextureType_HEIGHT) > 0 &&
                 A->GetTexture(aiTextureType_HEIGHT, 0, &texPath) == AI_SUCCESS) {
-                // Some exporters store normal maps as "height" type; treat as normal map
-                normalTexID = loadTexture(texPath.C_Str());
+
+                std::filesystem::path rel(texPath.C_Str());
+                std::filesystem::path full = modelDir / rel;
+
+                normalTexID = loadTexture(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }
         }//END MATERIAL
@@ -239,9 +281,11 @@ void Model::update(){
 
 void Model::draw() const {
 
+    //transform pos,rotation,scale from model to world
     glm::mat4 M = glm::translate(glm::mat4(1.f), position)
         * glm::rotate(glm::mat4(1.f), rotation, glm::vec3(0, 1, 0))
         * glm::scale(glm::mat4(1.f), scale);
+    //transform normals from model to world
     glm::mat3 normalMat = glm::transpose(glm::inverse(M));
     GLSetup::setMat4(GLSetup::shaderProgram, "uModel", M);
     GLSetup::setMat3(GLSetup::shaderProgram, "uNormalMat", normalMat);
