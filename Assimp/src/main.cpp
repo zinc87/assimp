@@ -4,8 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "GL.h"
 #include "camera.h"
+#include "stb_image.h"
+
 
 #include <iostream>
 
@@ -40,9 +44,10 @@ int main() {
 
         Camera::CameraUpdate();
 
-        ak47.update();
-        ak47.draw();
-        //Nineteen11.draw();
+        //ak47.update();
+        //ak47.draw();
+        Nineteen11.update();
+        Nineteen11.draw();
 
         glfwSwapBuffers(GLSetup::window);
     }

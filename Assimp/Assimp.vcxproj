@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Assimp\include;$(ProjectDir)..\Extern\glm;$(ProjectDir)..\Extern\GLFW\include;$(ProjectDir)..\Extern\Glad\include;$(ProjectDir)..\Extern\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Assimp\include;$(ProjectDir)..\Extern\glm;$(ProjectDir)..\Extern\GLFW\include;$(ProjectDir)..\Extern\Glad\include;$(ProjectDir)..\Extern\Assimp\include;$(ProjectDir)..\Extern\stb_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Assimp\include;$(ProjectDir)..\Extern\glm;$(ProjectDir)..\Extern\GLFW\include;$(ProjectDir)..\Extern\Glad\include;$(ProjectDir)..\Extern\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Assimp\include;$(ProjectDir)..\Extern\glm;$(ProjectDir)..\Extern\GLFW\include;$(ProjectDir)..\Extern\Glad\include;$(ProjectDir)..\Extern\Assimp\include;$(ProjectDir)..\Extern\stb_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>

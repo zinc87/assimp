@@ -1,8 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+
 #include "GL.h"
 #include "camera.h"
+#include "stb_image.h"
 
 #include <iostream>
 #include <string>
@@ -89,27 +91,55 @@ Model Model::load(const char* path) {
     }
 
     Model model;
+
+    GLuint normalTexID = 0;
+    bool hasNormal = false;
+
     model.meshes.reserve(scene->mNumMeshes);
 
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* m = scene->mMeshes[i];
 
+
+        //VERTEX
         std::vector<Vertex> verts; 
         verts.reserve(m->mNumVertices);
         for (unsigned int j = 0; j < m->mNumVertices; ++j) {
             
             Vertex vert{};
-
+            
+            //postition
             vert.pos = { m->mVertices[j].x, m->mVertices[j].y, m->mVertices[j].z };
+            
+            //normal
             if (m->HasNormals()) {
                 vert.normal = { m->mNormals[j].x, m->mNormals[j].y, m->mNormals[j].z };
             }
             else {
                 vert.normal = { 0, 1, 0 };
             }
-            verts.push_back(vert);
-        }
 
+            //UV
+            if (m->HasTextureCoords(0)) {
+                vert.uv = { m->mTextureCoords[0][j].x, m->mTextureCoords[0][j].y };
+            }
+            else {
+                vert.uv = { 0.f,0.f };
+            }
+
+            //tangent/Bitangent
+            if (m->HasTangentsAndBitangents()) {
+                vert.tangent = { m->mTangents[j].x,m->mTangents[j].y ,m->mTangents[j].z };
+                vert.bitangent = { m->mBitangents[j].x, m->mBitangents[j].y,m->mBitangents[j].z };
+            }
+            else {
+                vert.tangent = { 1,0,0 };
+                vert.bitangent = { 0,1,0 };
+            }
+            verts.push_back(vert);
+        }//END VERTEX
+
+        //INDEX
         std::vector<unsigned> idx; 
         idx.reserve(m->mNumFaces * 3);
         for (unsigned f = 0; f < m->mNumFaces; ++f) {
@@ -118,8 +148,9 @@ Model Model::load(const char* path) {
             {
                 idx.push_back(face.mIndices[k]);
             }
-        }
+        }//END INDEX
 
+        //MATERIAL
         Material mat;
 
         if (scene->HasMaterials()) {
@@ -135,10 +166,52 @@ Model Model::load(const char* path) {
             if (AI_SUCCESS == aiGetMaterialFloat(A, AI_MATKEY_SHININESS, &f))   mat.shininess = (f > 0 ? f : 16.0f);
             if (AI_SUCCESS == aiGetMaterialFloat(A, AI_MATKEY_OPACITY, &f))   mat.opacity = glm::clamp(f, 0.f, 1.f);
             if (AI_SUCCESS == aiGetMaterialInteger(A, AI_MATKEY_TWOSIDED, &iVal)) mat.twoSided = (iVal != 0);
-        }
+
+            auto loadTexture = [](const std::string& filepath, bool genMip = true) -> GLuint {
+
+                int w, h, n;
+                stbi_set_flip_vertically_on_load(true);
+                unsigned char* textureData = stbi_load(filepath.c_str(), &w, &h, &n, 4);
+                if (!textureData) {
+                    std::cout << "stb_image error\n";
+                    return -1;
+                }
+
+                GLuint tex;
+                glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+                glTextureStorage2D(tex, std::max(1, (int)std::floor(std::log2(std::max(w, h)))) + 1, GL_RGBA8, w, h);
+                glTextureSubImage2D(tex, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+                if (genMip) glGenerateTextureMipmap(tex);
+                glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                stbi_image_free(textureData);
+                return tex;
+
+                };
+
+            aiString texPath;
+            if (A->GetTextureCount(aiTextureType_NORMALS) > 0 &&
+                A->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
+                normalTexID = loadTexture(texPath.C_Str());
+                hasNormal = (normalTexID != 0);
+            }
+            else if (A->GetTextureCount(aiTextureType_HEIGHT) > 0 &&
+                A->GetTexture(aiTextureType_HEIGHT, 0, &texPath) == AI_SUCCESS) {
+                // Some exporters store normal maps as "height" type; treat as normal map
+                normalTexID = loadTexture(texPath.C_Str());
+                hasNormal = (normalTexID != 0);
+            }
+        }//END MATERIAL
+
+
+
 
         Mesh mesh(verts, idx);
         mesh.mat = mat;
+        mesh.normalTex = normalTexID;
+        mesh.hasNormalMap = hasNormal;
         model.meshes.push_back(mesh);
 
     }
@@ -162,8 +235,6 @@ void Model::update(){
     if (glfwGetKey(GLSetup::window, GLFW_KEY_LEFT) == GLFW_PRESS) position.z -= 1.f * v;
     if (glfwGetKey(GLSetup::window, GLFW_KEY_UP) == GLFW_PRESS) position.y += 1.f * v;
     if (glfwGetKey(GLSetup::window, GLFW_KEY_DOWN) == GLFW_PRESS) position.y -= 1.f * v;
-
-
 }
 
 void Model::draw() const {

@@ -15,6 +15,9 @@
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 normal;
+	glm::vec2 uv;
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
 };
 
 struct Material {
@@ -59,8 +62,11 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	Material mat;
-	Mesh() = default;
 
+	GLuint normalTex;
+	bool hasNormalMap = false;
+
+	Mesh() = default;
 	Mesh(const std::vector<Vertex>& v, const std::vector<unsigned int>& i) :
 		vertices{ v }, indices{ i }
 	{
