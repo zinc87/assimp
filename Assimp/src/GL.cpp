@@ -226,13 +226,12 @@ Model Model::load(const char* modelPath) {
 
 
             aiString texPath;
-            std::string filePath = "assets\\";
-            char fullPath[100];
+
             if (A->GetTextureCount(aiTextureType_NORMALS) > 0 &&
                 A->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
                 std::filesystem::path rel(texPath.C_Str());
                 std::filesystem::path full = modelDir / rel;
-                
+               
                 normalTexID = loadTexture(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }

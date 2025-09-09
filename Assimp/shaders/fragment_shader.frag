@@ -37,16 +37,21 @@ void main() {
         Nw = normalize(TBN[2]);
     }
 
-    //Blinn-Phong
-    float diff = max(dot(N, L), 0.0);
-    float spec = (diff > 0.0) ? pow(max(dot(N, H), 0.0), uShininess) : 0.0;
-
-    vec3 ambient = uKa * uAmbientLight;
-    vec3 diffuse = diff * uKd;
-    vec3 specular = spec * uKs;
-    vec3 color = ambient + diffuse + specular;
+    vec3 color;
+    
     if(matToggle){
+        float diff = max(dot(N, L), 0.0);
         color = uBaseColor * (0.15 + 0.85 * diff);
+    }
+    else{
+        //Blinn-Phong
+        float diff = max(dot(Nw, L), 0.0);
+        float spec = (diff > 0.0) ? pow(max(dot(Nw, H), 0.0), uShininess) : 0.0;
+
+        vec3 ambient = uKa * uAmbientLight;
+        vec3 diffuse = diff * uKd;
+        vec3 specular = spec * uKs;
+        color = ambient + diffuse + specular;
     }
     
 
