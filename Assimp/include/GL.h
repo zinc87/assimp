@@ -29,8 +29,8 @@ struct Material {
 
 struct GLSetup {
 
-	inline static int width = 800;
-	inline static int height = 600;
+	inline static int width = 1000;
+	inline static int height = 800;
 	inline static float lastTime;
 	inline static float lastTime2;
 	inline static bool matToggle = false;

@@ -189,7 +189,7 @@ void GLSetup::init() {
 
 
     //create window object
-    window = glfwCreateWindow(800, 600, "Assimp", NULL, NULL);
+    window = glfwCreateWindow(GLSetup::width, GLSetup::height, "Assimp", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -212,7 +212,7 @@ void GLSetup::init() {
 
     //viewport
     //first 2 params indicate lower left corner of window
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, GLSetup::width, GLSetup::height);
 
     //resize viewport
     //callback function - only gets called when an event happens
