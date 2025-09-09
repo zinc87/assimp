@@ -184,7 +184,7 @@ Model Model::load(const char* modelPath) {
 
         //MATERIAL
         Material mat;
-
+        
         if (scene->HasMaterials()) {
             const aiMaterial* A = scene->mMaterials[m->mMaterialIndex];
             aiColor4D c;
@@ -199,7 +199,9 @@ Model Model::load(const char* modelPath) {
             if (AI_SUCCESS == aiGetMaterialFloat(A, AI_MATKEY_OPACITY, &f))   mat.opacity = glm::clamp(f, 0.f, 1.f);
             if (AI_SUCCESS == aiGetMaterialInteger(A, AI_MATKEY_TWOSIDED, &iVal)) mat.twoSided = (iVal != 0);
 
-            auto loadTexture = [](const char* fullpath, bool genMip = true) -> GLuint {
+
+            //NORMAL MAPPING - no embedded textures
+            auto loadNormalMap = [](const char* fullpath, bool genMip = true) -> GLuint {
 
                 int w, h, n;
                 stbi_set_flip_vertically_on_load(true);
@@ -232,7 +234,7 @@ Model Model::load(const char* modelPath) {
                 std::filesystem::path rel(texPath.C_Str());
                 std::filesystem::path full = modelDir / rel;
                
-                normalTexID = loadTexture(full.string().c_str());
+                normalTexID = loadNormalMap(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }
             else if (A->GetTextureCount(aiTextureType_HEIGHT) > 0 &&
@@ -241,7 +243,7 @@ Model Model::load(const char* modelPath) {
                 std::filesystem::path rel(texPath.C_Str());
                 std::filesystem::path full = modelDir / rel;
 
-                normalTexID = loadTexture(full.string().c_str());
+                normalTexID = loadNormalMap(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }
         }//END MATERIAL
