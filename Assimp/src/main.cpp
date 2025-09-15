@@ -25,8 +25,8 @@ int main() {
     Model dragon;
 
     try {
-        ak47 = Model::load("assets/AK47.fbx");
-        dragon = Model::load("assets/Dragon 2.5_fbx.fbx");
+        ak47 = Model::load("assets\\models\\AK47.fbx");
+        dragon = Model::load("assets\\models\\Dragon 2.5_fbx.fbx");
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";

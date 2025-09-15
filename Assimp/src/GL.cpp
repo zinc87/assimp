@@ -232,8 +232,9 @@ Model Model::load(const char* modelPath) {
             if (A->GetTextureCount(aiTextureType_NORMALS) > 0 &&
                 A->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
                 std::filesystem::path rel(texPath.C_Str());
-                std::filesystem::path full = modelDir / rel;
-               
+                path assestPath = modelDir.parent_path();
+                path full = assestPath / rel;
+
                 normalTexID = loadNormalMap(full.string().c_str());
                 hasNormal = (normalTexID != 0);
             }
@@ -241,7 +242,8 @@ Model Model::load(const char* modelPath) {
                 A->GetTexture(aiTextureType_HEIGHT, 0, &texPath) == AI_SUCCESS) {
 
                 std::filesystem::path rel(texPath.C_Str());
-                std::filesystem::path full = modelDir / rel;
+                path assestPath = modelDir.parent_path();
+                path full = assestPath / rel;
 
                 normalTexID = loadNormalMap(full.string().c_str());
                 hasNormal = (normalTexID != 0);
